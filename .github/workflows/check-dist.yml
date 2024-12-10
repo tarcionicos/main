@@ -1,0 +1,75 @@
+# In JavaScript actions, `dist/` is a special directory. When you reference
+# an action with the `uses:` property, `dist/index.js` is the code that will be
+# run. For this project, the `dist/index.js` file is transpiled from other
+# source files. This workflow ensures the `dist/` directory contains the
+# expected transpiled code.
+#
+# If this workflow is run from a feature branch, it will act as an additional CI
+# check and fail if the checked-in `dist/` directory does not match what is
+# expected from the build.
+name: Check Transpiled JavaScript
+
+on:
+  push:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check-dist:
+    name: Check dist/
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+      statuses: write
+
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        id: setup-node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Install Dependencies
+        id: install
+        run: npm ci
+
+      - name: Build dist/ Directory
+        id: build
+        run: npm run all
+
+      - name: Check for changes
+        id: changes
+        run: |
+          changes=$(git diff --ignore-space-at-eol --text | wc -l)
+          if [[ -n "$changes" && "$changes" -gt "0" ]]; then
+            echo "changes detected"
+            echo "CHANGES=true" >> $GITHUB_ENV
+          else
+            echo "no changes"
+          fi
+
+      - name: Commit & Push changes
+        id: commit-push
+        if: ${{success() && env.CHANGES=='true'}}
+        run: |
+          # generate key to sign commit
+          mkdir -p /tmp/key
+          ssh-keygen -t ed25519 -C 'github-actions[bot]@users.noreply.github.com' -f /tmp/key/id_ed25519 -N ''
+          git add .
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.signingkey '/tmp/key/id_ed25519'
+          git config gpg.format ssh
+          git config commit.gpgsign true
+          git commit -m "chore: automatic build changes"
+          git push
+          rm -rm /tmp/key
