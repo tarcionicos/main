@@ -159,7 +159,7 @@ function createCard({ name, status, owner, repo, eventName, ref, actor, workflow
           {
             decoratedText: {
               icon: { iconUrl: 'https://raw.githubusercontent.com/JChrist/google-chat-github-action/main/assets/actor.png' },
-              topLabel: 'Actorzin2',
+              topLabel: 'Actorzin666',
               text: actor
             }
           },
