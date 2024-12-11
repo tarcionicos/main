@@ -51,10 +51,10 @@ jobs:
         id: checkout
         uses: actions/checkout@v4
 
-      - name: Test Local Action
-        id: test-action
-        uses: ./
-        with:
-          name: 'Google Chat Github Action Build'
-          url: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
-          status: ${{ job.status }}
+#      - name: Test Local Action
+#        id: test-action
+#        uses: ./
+#        with:
+#          name: 'Google Chat Github Action Build'
+#          url: ${{ secrets.GOOGLE_CHAT_WEBHOOK }}
+#          status: ${{ job.status }}
